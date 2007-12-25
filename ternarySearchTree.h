@@ -57,6 +57,9 @@ WebSite: http://www.cs.dal.ca/~zyu
 // uncomment following define to display tree infomation
 //#define TST_INFO_ENABLE
 
+// modify following define to enable assert
+#define D(x) //x;
+
 #include "vector.h"
 #include "mystring.h"
 
@@ -73,7 +76,8 @@ typedef struct TstNode
 	}
 	char splitChar;
 	TstTree left, right;
-	union {
+	union 
+	{
 		TstTree mid;
 		int index;
 	};
@@ -103,20 +107,20 @@ struct TstItem
 	
 	void operator=( const TstItem & item )
 	{
-		key = item.key;
-		value = item.value;
+		this->key = item.key;
+		this->value = item.value;
 	}
 	bool operator>( const TstItem & item ) const
 	{
-		return key > item.key;
+		return this->key > item.key;
 	}
 	bool operator==( const TstItem & item ) const
 	{
-		return key == item.key;
+		return this->key == item.key;
 	}
 	bool operator<( const TstItem & item ) const
 	{
-		return key < item.key;
+		return this->key < item.key;
 	}
 
 };
@@ -142,12 +146,12 @@ public:
 	/**
 	* Build balanced tree by binary inserting item of a sorted item list.
 	* 
-	* @param	itemVector - vectors that holds all item which is pair of key & value
+	* @param newItemVector - vectors that holds all item which is pair of key & value
 	* Note: current TST tree will be cleared before build balanced tree.
 	*
 	*/
 
-	void buildBalancedTree( Vector< TstItem<Object> > & itemVector );
+	void buildBalancedTree( Vector< TstItem<Object> > & newItemVector );
 
 	/**
 	* Determines whether the Ternary Search Tree contains a specific key.
@@ -156,7 +160,7 @@ public:
 	* @return	true if the tree contains an element with the specified key; otherwise, false.
 	*/
 
-	bool contains( const char * key );
+	bool contains( const char * key ) const;
 
 	/**
 	* get item with the specified key from the tree
@@ -165,10 +169,10 @@ public:
 	* @return	pointer to the item, NULL if key not found
 	*/
 
-	inline TstItem<Object> * getItem( const char * key )
+	inline TstItem<Object> * getItem( const char * key ) const
 	{
 		int index = this->getItemIndex( key );
-		return index == -1 ? NULL : itemVector[ index ];
+		return index == -1 ? NULL : this->itemVector[ index ];
 	}
 
 	/**
@@ -178,15 +182,15 @@ public:
 	* @return	pointer to the item, NULL if not found
 	*/
 	
-	inline TstItem<Object> * getItem( int index )
+	inline TstItem<Object> * getItem( int index ) const
 	{
-		assert( index >= 0 && index < itemCount );
-		return itemVector[ index ];
+		D ( assert( index >= 0 && index < this->itemCount ); )
+		return this->itemVector[ index ];
 	}
 
-	inline Vector< TstItem<Object> * > & getItems( )
+	inline Vector< TstItem<Object> * > & getItems()
 	{
-		return itemVector;
+		return this->itemVector;
 	}
 
 	/**
@@ -196,9 +200,10 @@ public:
 	* @return	The key of the item with specified index, NULL if not found
 	*/
 
-	inline const char * getKey( int index )
+	inline const char * getKey( int index ) const
 	{
-		return index == -1 ? NULL : itemVector[ index ]->key.c_str();
+		D( assert( index >=0 && index < this->itemCount ); )
+		return this->itemVector[ index ]->key.c_str();
 	}
 
 	/**
@@ -208,10 +213,10 @@ public:
 	* @return	pointer to the value, NULL if key not found
 	*/
 
-	inline Object * getValue( const char * key )
+	inline Object * getValue( const char * key ) const
 	{
 		int index = this->getItemIndex( key );
-		return index == -1 ? NULL : &( itemVector[ index ]->value );
+		return index == -1 ? NULL : &( this->itemVector[ index ]->value );
 	}
 
 	/**
@@ -221,9 +226,10 @@ public:
 	* @return	pointer to the value, NULL if not found
 	*/
 
-	Object * getValue( int index )
+	Object * getValue( int index ) const
 	{
-		return index == -1 ? NULL : &( itemVector[ index ]->value );
+		D ( assert ( index >= 0 && index < (int)this->itemCount ); )
+		return &this->itemVector[ index ]->value;
 	}
 
 	/**
@@ -234,28 +240,35 @@ public:
 	* @return	index of the key in key vector. If key is not found, return -1
 	*/
 
-	int getItemIndex( const char * key )
+	int getItemIndex( const char * key ) const
 	{
-		int index = -1; /* index of the key in keyVector */
-		int diff, sc = *key;
-		TstTree p = root;
+		int diff, keyChar = *key, index = -1; /* index of the key in keyVector */
 
-		while (p) 
+		TstTree tst = this->root;
+
+		while (tst) 
 		{
-			if ((diff = sc - p->splitChar) == 0) 
+			if ((diff = keyChar - tst->splitChar) == 0) 
 			{
-				if (sc == 0) // found the key
+				if (keyChar)
 				{
-					index = p->index; // get the index of the key
+   					keyChar = *++key;
+					tst = tst->mid;
+				}
+				else
+				{ // match to the end, found the key
+					index = tst->index; // get the index of the key
 					break;
 				}
-				sc = *++key;
-				p = p->mid;
 			} 
 			else if (diff < 0)
-				p = p->left;
-			else 
-				p = p->right;
+			{
+				tst = tst->left;
+			}
+			else
+			{ 
+				tst = tst->right;
+			}
 		}
 		// if index -1, that means the search has run off the end of the tree, the key not found
 		return index;
@@ -286,8 +299,8 @@ public:
 	Vector<int> nearSearch( const char * key, int distance )
 	{
 		Vector<int> nearVector;
-		nearVectorPtr = &nearVector;
-		nearSearch( root, key, distance );
+		this->nearVectorPtr = &nearVector;
+		this->nearSearch( this->root, key, distance );
 		return nearVector;
 	}
 	/**
@@ -304,7 +317,7 @@ public:
 	{
 		//string str( prefix );
 		//str.append('*');
-		return partialMatchSearch( string( prefix ).append('*').c_str() );
+		return this->partialMatchSearch( string( prefix ).append('*').c_str() );
 	}
 
 	/**
@@ -329,7 +342,7 @@ public:
 
 	int count() const 
 	{
-		return itemCount;
+		return this->itemCount;
 	}
 
 	/**
@@ -339,23 +352,23 @@ public:
 	void clear()
 	{ 
 #ifdef TST_INFO_ENABLE
-		nodeCount=0;
+		this->nodeCount=0;
 #endif
 		// clean up the tree
-		cleanup( root ); 
+		this->cleanup( root ); 
 		// clean up key, value vectors and reset variables.
 		/*keyVector.clear();
 		valueVector.clear();
 		*/
 		/* release memory of items */
-		for ( int i = 0; i < itemCount; i++ )
+		for ( int i = 0; i < this->itemCount; i++ )
 		{
-			delete itemVector[i];
+			delete this->itemVector[i];
 		}
-		itemVector.clear();
-		root = NULL;
-		itemCount = 0;
-		existingItemIndex = -1;
+		this->itemVector.clear();
+		this->root = NULL;
+		this->itemCount = 0;
+		this->existingItemIndex = -1;
 #ifdef TST_INFO_ENABLE
 		fprintf( stderr, "total %d node in the TST tree, node size %d, total %d bytes.\n", nodeCount, 13, nodeCount * 13 );
 		fprintf( stderr, "total %d bytes for strings.\n", strLenCount );
@@ -379,25 +392,25 @@ private:
 	/**
 	* clean up nodes in the tree. inline to improve performance
 	*
-	* @param p	root of the tree
+	* @param tst	root of the tree
 	*/
 
-	void cleanup( TstTree p )
+	void cleanup( TstTree tst )
 	{   
-		if (p) 
+		if (tst) 
 		{
 #ifdef TST_INFO_ENABLE
-			++nodeCount;
+			++this->nodeCount;
 #endif
-			cleanup(p->left);
+			this->cleanup(tst->left);
 
-			if (p->splitChar) 
+			if (tst->splitChar) 
 			{
-				cleanup(p->mid);
+				this->cleanup(tst->mid);
 			}
 
-			cleanup(p->right);
-			delete(p);
+			this->cleanup(tst->right);
+			delete(tst);
 		}
 	}
 
@@ -430,20 +443,21 @@ private:
 	* Recursively build balanced tree by binary inserting item of a sorted item list
 	* from specified start to end position
 	* 
-	* @param	itemVector - vectors that holds all item which is pair of key & value
+	* @param	newItemVector - vectors that holds all item which is pair of key & value
 	* @param	start - start position of the vector
 	* @param	end - end position of the vector
 	* Note: current TST tree will be cleared before build balanced tree.
 	*
 	*/
 
-	void buildBalancedTreeRecursive( Vector< TstItem<Object> > & itemVector, int start, int end );
+	void buildBalancedTreeRecursive( Vector< TstItem<Object> > & newItemVector, int start, int end );
 
 	/**
-	* Return a list of items sorted by key, by travering the tree recursively
+	* Return a list of items sorted by key, by travering the given tst tree recursively
+	* @param tst - root of the ternary search tree
 	*/
 
-	void getSortedItemIndexes( TstTree p );
+	void getSortedItemIndexes( TstTree tst );
 
 	/*Vector<string> keyVector; // vector to track all inserted keys.
 
@@ -470,7 +484,7 @@ TernarySearchTree<Object>::TernarySearchTree ( ):
 sortedItemIndexVectorPtr(0), pmVectorPtr(0), nearVectorPtr(0), root(0), itemCount(0), existingItemIndex(-1)
 {
 #ifdef TST_INFO_ENABLE
-	strLenCount=0;
+	this->strLenCount=0;
 #endif
 }
 template <class Object>
@@ -483,107 +497,102 @@ template <class Object>
 TstNode * TernarySearchTree<Object>::add( const char* key, const Object & value )
 {
 #ifdef TST_INFO_ENABLE
-	strLenCount += sizeof( string(key)) + (int)strlen(key) + 1;
+	this->strLenCount += sizeof( string(key)) + (int)strlen(key) + 1;
 #endif
-	TstNode * p = add( key );
-	if ( p )
+	TstNode * tstNode = add( key );
+	if ( tstNode )
 	{
 		if ( this->existingItemIndex == -1 )
 		{	// key not existed in tst tree
 			this->itemVector.add( new TstItem<Object>( key, value ) );
-			p->index = itemCount -1;
+			tstNode->index = itemCount -1;
 		}
 		else
 		{
 			// if key alreay existed in the tree, replace its value with new value
-			itemVector[ this->existingItemIndex ]->value = value;
-			p->index = this->existingItemIndex;
+			this->itemVector[ this->existingItemIndex ]->value = value;
+			tstNode->index = this->existingItemIndex;
 
 		}
 	}
-	return p;
+	return tstNode;
 }
 
 template <class Object>
 TstNode* TernarySearchTree<Object>::add( const char* key )
 {
 	//cout<<"Inserting "<<key<<endl;
-	TstTree p = this->root;
+	TstTree tst = this->root;
 	TstTree parent = 0;
 	if( key == 0 || *key == 0)
 		return 0;
 
-	while (p) {
-		parent = p;
-		if ( *key < p->splitChar )
+	while (tst) 
+	{
+		parent = tst;
+		if ( *key < tst->splitChar )
 		{
-			p = p->left;
+			tst = tst->left;
 		}
-		else if ( *key == p->splitChar )  
+		else if ( *key == tst->splitChar )  
 		{
 			// return true, if the current character is the end-of-string character 0
 			if ( *key == 0 )
 			{
-				this->existingItemIndex = p->index;
+				this->existingItemIndex = tst->index;
 				break;
 			}
-			p = p->mid;
+			tst = tst->mid;
 			++key;
 		} 
 		else
 		{
-			p = p->right;
+			tst = tst->right;
 		}
 	}
 
 
-	if( !p ) // key not found
+	if( !tst ) // key not found
 	{
 		this->existingItemIndex = -1;
-		p = new TstNode( *key );
+		tst = new TstNode( *key );
 		//cout<<"char "<<p->splitChar<<endl;
 		if ( parent )
 		{
-
-			/*if ( *key == parent->splitChar )
+			if ( *key == parent->splitChar )
 			{
-				parent->mid = p;
+				parent->mid = tst;
 			}
 			else if ( *key < parent->splitChar )
 			{ 
-				parent->left = p;
+				parent->left = tst;
 			}
 			else
 			{
-				parent->right = p;
+				parent->right = tst;
 			}
-			*/
-			int diff = *key - parent->splitChar;
-			diff == 0 ? parent->mid = p : diff < 0 ? parent->left = p : parent->right = p;
-			
 
 		}
-		if ( ! root )
+		if ( !this->root )
 		{
-			root = p;
+			this->root = tst;
 		}
-		while ( p->splitChar )
+		while ( tst->splitChar )
 		{
-			++key;
-			p->mid = new TstNode( *key );
-			p = p->mid; // move to new node
+			tst->mid = new TstNode( *++key );
+			tst = tst->mid; // move to new node
 		}
 
-		++itemCount;
+		++this->itemCount;
 	}
 
-	return p;
+	return tst;
 }
 
 template <class Object>
-bool TernarySearchTree<Object>::contains( const char * key )
+bool TernarySearchTree<Object>::contains( const char * key ) const
 {   
-	return getItemIndex( key ) != -1;
+	return this->getItemIndex( key ) != -1;
 }
 
 template <class Object>
@@ -596,20 +605,20 @@ Vector<int> TernarySearchTree<Object>::getSortedItemIndexes( )
 }
 
 template <class Object>
-void TernarySearchTree<Object>::getSortedItemIndexes( TstTree p ) 
+void TernarySearchTree<Object>::getSortedItemIndexes( TstTree tst ) 
 {   
-	if ( p )
+	if ( tst )
 	{
-		getSortedItemIndexes(p->left); 
-		if (p->splitChar) 
+		this->getSortedItemIndexes( tst->left ); 
+		if (tst->splitChar) 
 		{
-			getSortedItemIndexes(p->mid); 
+			this->getSortedItemIndexes(tst->mid); 
 		}
 		else 
 		{
-			sortedItemIndexVectorPtr->add( p->index );
+			this->sortedItemIndexVectorPtr->add( tst->index );
 		}
-		getSortedItemIndexes( p->right ); 
+		this->getSortedItemIndexes( tst->right ); 
 	}
 }
 
@@ -617,8 +626,8 @@ template <class Object>
 Vector<int> TernarySearchTree<Object>::partialMatchSearch( const char * key )
 {
 	Vector<int> pmVector;
-	pmVectorPtr = &pmVector;
-	partialMatchSearch( root, (char*)key );
+	this->pmVectorPtr = &pmVector;
+	this->partialMatchSearch( root, (char*)key );
 	return pmVector;
 }
 
@@ -630,7 +639,7 @@ void TernarySearchTree<Object>::partialMatchSearch(TstTree tree, const char *key
 	// partial match left
 	if (*key == '?' || *key == '*' || *key < tree->splitChar)
 	{
-		partialMatchSearch( tree->left, key );
+		this->partialMatchSearch( tree->left, key );
 	}
 	// partial match middle
 	if (*key == '?' || *key == '*' || *key == tree->splitChar)
@@ -639,22 +648,22 @@ void TernarySearchTree<Object>::partialMatchSearch(TstTree tree, const char *key
 		{
 			if ( *key == '*' )
 			{
-				partialMatchSearch( tree->mid, key );
+				this->partialMatchSearch( tree->mid, key );
 			}
 			else
 			{
-				partialMatchSearch( tree->mid, key+1 );	// search next pattern char
+				this->partialMatchSearch( tree->mid, key+1 );	// search next pattern char
 			}
 		}
 	}
 	if ( ( *key == 0 ||  *key == '*' ) && tree->splitChar == 0 )
 	{
-		pmVectorPtr->add( tree->index );
+		this->pmVectorPtr->add( tree->index );
 	}
 
 	if (*key == '?' || *key == '*' || *key > tree->splitChar)
 	{
-		partialMatchSearch( tree->right, key );
+		this->partialMatchSearch( tree->right, key );
 	}
 }
 
@@ -668,42 +677,40 @@ void TernarySearchTree<Object>::nearSearch( TstTree tree, const char * key, int 
 
 	if ( distance > 0 || *key < tree->splitChar )
 	{
-		nearSearch( tree->left, key, distance );
+		this->nearSearch( tree->left, key, distance );
 	}
 
 	if ( tree->splitChar == 0 )
 	{
 		if ( (int) strlen( key ) <= distance )
 		{
-			nearVectorPtr->add( tree->index );	// found the matched key, added it to index vector
+			this->nearVectorPtr->add( tree->index );	// found the matched key, added it to index vector
 		}
 	}
 	else
 	{
-		nearSearch( tree->mid, *key ? key+1 : key, ( *key == tree->splitChar ) ? distance : distance - 1 );
+		this->nearSearch( tree->mid, *key ? key + 1 : key, ( *key == tree->splitChar ) ? distance : distance - 1 );
 	}
 
 	if ( distance > 0 || *key > tree->splitChar )
 	{
-		nearSearch( tree->right, key, distance );
+		this->nearSearch( tree->right, key, distance );
 	}
 }
 template <class Object>
-void TernarySearchTree<Object>::buildBalancedTree( Vector< TstItem<Object> > & itemVector )
+void TernarySearchTree<Object>::buildBalancedTree( Vector< TstItem<Object> > & newItemVector )
 {
-	int count = (int)itemVector.count();
-
-	if ( count == itemVector.count() && count > 0 )
+	if ( newItemVector.count() )
 	{
 		this->clear();
 		// sort the items by keys, and binary insert, then we will get a balanced tree
-		itemVector.sort();
-		buildBalancedTreeRecursive( itemVector, 0, count - 1 );
+		newItemVector.sort();
+		this->buildBalancedTreeRecursive( newItemVector, 0, newItemVector.count() - 1 );
 	}
 }
 
 template <class Object>
-void TernarySearchTree<Object>::buildBalancedTreeRecursive( Vector< TstItem<Object> > & itemVector, int start, int end )
+void TernarySearchTree<Object>::buildBalancedTreeRecursive( Vector< TstItem<Object> > & newItemVector, int start, int end )
 {
 	int mid;
 	if ( start > end || end < 0 )
@@ -711,9 +718,9 @@ void TernarySearchTree<Object>::buildBalancedTreeRecursive( Vector< TstItem<Obje
 		return;
 	}
 	mid = ( end - start + 1 ) / 2;
-	add( itemVector[ start + mid ].key.c_str(), itemVector[ start + mid ].value );
-	buildBalancedTreeRecursive( itemVector, start, start + mid - 1 );
-	buildBalancedTreeRecursive( itemVector, start + mid + 1, end );
+	add( newItemVector[ start + mid ].key.c_str(), newItemVector[ start + mid ].value );
+	buildBalancedTreeRecursive( newItemVector, start, start + mid - 1 );
+	buildBalancedTreeRecursive( newItemVector, start + mid + 1, end );
 }
 
 #endif
