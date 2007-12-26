@@ -242,26 +242,23 @@ public:
 
 	int getItemIndex( const char * key ) const
 	{
-		int diff, keyChar = *key, index = -1; /* index of the key in keyVector */
-
 		TstTree tst = this->root;
 
 		while (tst) 
 		{
-			if ((diff = keyChar - tst->splitChar) == 0) 
+			if ( *key == tst->splitChar )
 			{
-				if (keyChar)
+				if (*key)
 				{
-   					keyChar = *++key;
+   					++key;
 					tst = tst->mid;
 				}
 				else
 				{ // match to the end, found the key
-					index = tst->index; // get the index of the key
-					break;
+					return tst->index; // get the index of the key
 				}
 			} 
-			else if (diff < 0)
+			else if ( *key < tst->splitChar )
 			{
 				tst = tst->left;
 			}
@@ -271,7 +268,7 @@ public:
 			}
 		}
 		// if index -1, that means the search has run off the end of the tree, the key not found
-		return index;
+		return -1;
 	}
 
 	/**
@@ -521,11 +518,11 @@ TstNode * TernarySearchTree<Object>::add( const char* key, const Object & value 
 template <class Object>
 TstNode* TernarySearchTree<Object>::add( const char* key )
 {
-	//cout<<"Inserting "<<key<<endl;
-	TstTree tst = this->root;
-	TstTree parent = 0;
 	if( key == 0 || *key == 0)
 		return 0;
+
+	//cout<<"Inserting "<<key<<endl;
+	TstTree tst = this->root, parent = 0;
 
 	while (tst) 
 	{
@@ -632,38 +629,39 @@ Vector<int> TernarySearchTree<Object>::partialMatchSearch( const char * key )
 }
 
 template <class Object>
-void TernarySearchTree<Object>::partialMatchSearch(TstTree tree, const char *key)
+void TernarySearchTree<Object>::partialMatchSearch(TstTree tree, const char * key)
 {
-	if (!tree) return;
-
-	// partial match left
-	if (*key == '?' || *key == '*' || *key < tree->splitChar)
+	if ( tree && key )
 	{
-		this->partialMatchSearch( tree->left, key );
-	}
-	// partial match middle
-	if (*key == '?' || *key == '*' || *key == tree->splitChar)
-	{
-		if ( tree->splitChar && *key )
+		// partial match left
+		if (*key == '?' || *key == '*' || *key < tree->splitChar)
 		{
-			if ( *key == '*' )
+			this->partialMatchSearch( tree->left, key );
+		}
+		// partial match middle
+		if (*key == '?' || *key == '*' || *key == tree->splitChar)
+		{
+			if ( tree->splitChar && *key )
 			{
-				this->partialMatchSearch( tree->mid, key );
-			}
-			else
-			{
-				this->partialMatchSearch( tree->mid, key+1 );	// search next pattern char
+				if ( *key == '*' )
+				{
+					this->partialMatchSearch( tree->mid, key );
+				}
+				else
+				{
+					this->partialMatchSearch( tree->mid, key+1 );	// search next pattern char
+				}
 			}
 		}
-	}
-	if ( ( *key == 0 ||  *key == '*' ) && tree->splitChar == 0 )
-	{
-		this->pmVectorPtr->add( tree->index );
-	}
+		if ( ( *key == 0 ||  *key == '*' ) && tree->splitChar == 0 )
+		{
+			this->pmVectorPtr->add( tree->index );
+		}
 
-	if (*key == '?' || *key == '*' || *key > tree->splitChar)
-	{
-		this->partialMatchSearch( tree->right, key );
+		if (*key == '?' || *key == '*' || *key > tree->splitChar)
+		{
+			this->partialMatchSearch( tree->right, key );
+		}
 	}
 }
 
@@ -697,6 +695,7 @@ void TernarySearchTree<Object>::nearSearch( TstTree tree, const char * key, int 
 		this->nearSearch( tree->right, key, distance );
 	}
 }
+
 template <class Object>
 void TernarySearchTree<Object>::buildBalancedTree( Vector< TstItem<Object> > & newItemVector )
 {
@@ -712,15 +711,14 @@ void TernarySearchTree<Object>::buildBalancedTree( Vector< TstItem<Object> > & n
 template <class Object>
 void TernarySearchTree<Object>::buildBalancedTreeRecursive( Vector< TstItem<Object> > & newItemVector, int start, int end )
 {
-	int mid;
 	if ( start > end || end < 0 )
 	{
 		return;
 	}
-	mid = ( end - start + 1 ) / 2;
+    int mid = ( end - start + 1 ) / 2;
 	add( newItemVector[ start + mid ].key.c_str(), newItemVector[ start + mid ].value );
-	buildBalancedTreeRecursive( newItemVector, start, start + mid - 1 );
-	buildBalancedTreeRecursive( newItemVector, start + mid + 1, end );
+	this->buildBalancedTreeRecursive( newItemVector, start, start + mid - 1 );
+	this->buildBalancedTreeRecursive( newItemVector, start + mid + 1, end );
 }
 
 #endif

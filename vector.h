@@ -45,7 +45,6 @@ private:
 	size_t currentSize; /* current number of items in the vector */
 	size_t maxSize;	/* max number of items the vector can hold */
 	Object * objects; /* pointer to the actual memory holding objects */
-#if 0
 	/**
 	* static callback function for sorting, the objects should be sorted in ascending order, from lowest value to highest value.
 	*/
@@ -59,6 +58,7 @@ private:
 		else return 1;
 		*/
 	}
+#if 0
 	/**
 	* static callback function for sorting, the objects should be sorted in descending order, from highest value to lowest value.
 	*/
@@ -279,8 +279,12 @@ public:
 	void sortAsc() { sort( SORT_ASC ); }
 	void sortDesc() { sort( SORT_DESC ); }
 	*/
-
-	void sort( CompareFunction compareFunction ) 
+	
+	/**
+	 * sort items in the vector by given compare function
+	 * if compare function is not specefied, default to Vecotr::compareObjectsAsc
+	 */
+	void sort( CompareFunction compareFunction = compareObjectsAsc ) 
 	{	
 		qsort( objects, currentSize, sizeof(Object), compareFunction );
 	}
@@ -366,7 +370,7 @@ void Vector<Object>::insert( const Object &val, size_t pos )
 
 	if ( currentSize == maxSize ) 
 	{
-		maxSize = maxSize != 0 ? 2 * maxSize : 1;
+		maxSize = maxSize != 0 ? maxSize << 1 : 1;
 		/*if ( maxSize < GROW_THRESHOLD )
 			maxSize *= 2;
 		else
