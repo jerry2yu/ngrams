@@ -74,13 +74,20 @@ public:
     */
    string( const string &str, size_t start, size_t len );
 
-   string( const string & copy );                     // Copy constructor
-   virtual ~string( )                                        // Destructor
+   /**
+    * Copy constructor
+    */
+   string( const string & copy );
+   
+   /**
+    * Destructor
+    */
+   virtual ~string( )
    { 
-      if ( bufferLength )
-         free( buffer );
-      buffer =0;
-      bufferLength = strLength =0;
+      if ( this->bufferLength )
+         free( this->buffer );
+      this->buffer =0;
+      this->bufferLength = this->strLength =0;
    }
 
    // string  operators
@@ -103,17 +110,17 @@ public:
     */
    bool operator == ( const string & str ) const
    {
-      return strLength == str.strLength && compare( str.c_str() ) == 0 ;
+      return this->strLength == str.strLength && compare( str.c_str() ) == 0 ;
    }
 
    bool operator == ( const char * str ) const
    {
-      return compare( str ) == 0 ;
+      return this->compare( str ) == 0 ;
    }
 
    bool operator!=( const string & str ) const
    {
-      return strLength != str.strLength || !( *this == str );
+      return this->strLength != str.strLength || !( *this == str );
    }
 
    bool operator!=( const char* str ) const
@@ -123,61 +130,61 @@ public:
 
    bool operator < ( const string & str ) const
    {
-      return compare( str.c_str() ) < 0 ;
+      return this->compare( str.c_str() ) < 0 ;
    }
 
    bool operator < ( const char * str ) const
    {
-      return compare( str ) < 0 ;
+      return this->compare( str ) < 0 ;
    }
 
 
    bool operator > ( const string & str ) const
    {
-      return compare( str.c_str() ) > 0 ;
+      return this->compare( str.c_str() ) > 0 ;
    }
 
    bool operator > ( const char * str ) const
    {
-      return compare( str ) > 0 ;
+      return this->compare( str ) > 0 ;
    }
 
    bool operator <= ( const string & str ) const
    {
-      return compare( str.c_str() ) <= 0 ;
+      return this->compare( str.c_str() ) <= 0 ;
    }
 
    bool operator <= ( const char * str ) const
    {
-      return compare( str ) <= 0 ;
+      return this->compare( str ) <= 0 ;
    }
    bool operator >= ( const string & str ) const
    {
-      return compare( str.c_str() ) >= 0 ;
+      return this->compare( str.c_str() ) >= 0 ;
    }
 
    bool operator >= ( const char * str ) const
    {
-      return compare( str ) >= 0 ;
+      return this->compare( str ) >= 0 ;
    }
 
    // string += ( will use underline append operation )
    string & operator += ( const char * suffix )
    {
       assert( suffix );
-      append ( suffix );
+      this->append ( suffix );
       return *this;
    }
 
    string & operator += ( const char single )
    {
-      append (single);
+      this->append (single);
       return *this;
    }
 
    string& operator += ( const string & suffix )
    {
-      append (suffix);
+      this->append (suffix);
       return *this;
    }
 
@@ -196,15 +203,15 @@ public:
     */
    size_t assign_new_size (size_t minimum_to_allocate)
    {
-      return minimum_to_allocate * 2;
+      return minimum_to_allocate << 1;
    }
 
    /**
     * convert string into a classic char *
     */
-   const char *c_str( ) const        
+   const char * c_str( ) const        
    {         
-      return buffer;
+      return this->buffer;
    }
 
    /**
@@ -212,7 +219,7 @@ public:
     */
    bool isEmpty () const
    {
-      return length () ? false : true;
+      return this->length () ? false : true;
    }
    
    /**
@@ -220,46 +227,51 @@ public:
     *
     * @return true if is null.
     */
-   inline bool operator!(void) const { return isNull(); };
+   inline bool operator!(void) const 
+   { 
+      return this->isNull(); 
+   }
 
    /**
     * return true if the characters is NULL
     */
    bool isNull () const
    {
-      return buffer ==  0;
+      return this->buffer ==  NULL;
    }
 
    // Return string length
-   size_t length( ) const  { return ( strLength ) ? strLength : 0; }
+   size_t length( ) const  
+   { 
+   	  return strLength ? strLength : 0; 
+   }
 
    // Return string allocated size
-   size_t getSize( ) const  { return ( bufferLength ) ? bufferLength : 0; }
+   size_t getSize( ) const  
+   { 
+   	  return bufferLength ? bufferLength : 0; 
+   }
 
    // single char extraction
    const char& at ( size_t index ) const
    {
-      assert( index < length () );
-      return buffer [index];
+      assert( index < this->length () );
+      return this->buffer [index];
    }
 
    enum { MAX_LENGTH = 2048 };  // Maximum length for input string
 
    string & append ( const char *suffix ) 
    { 
-      return append( suffix, strlen(suffix) ); 
+      return this->append( suffix, strlen(suffix) ); 
    }
 
    string & append( const char* str, size_t len );
-   /*{ 
-      //insert( strLength + 1, str, len );
-   }
-    */
 
    // append function for another string
    string & append ( const string & suffix )
    {
-      return append ( suffix.c_str (), suffix.length() );
+      return this->append ( suffix.c_str (), suffix.length() );
    }
 
    // append for a single char.
@@ -296,7 +308,7 @@ public:
     */
    inline string substring( size_t start ) const
    {
-      return substring ( start, strLength );
+      return substring ( start, this->strLength );
    }
 
    /**
@@ -331,7 +343,7 @@ public:
     */
    inline string & trim( )   
    { 
-      return trim( " " );
+      return this->trim( " " );
    }
 
    /**
@@ -344,7 +356,7 @@ public:
 
    inline string & trim(const char *trimChars)
    {
-      return trimEnd( trimChars ).trimStart( trimChars );
+      return this->trimEnd( trimChars ).trimStart( trimChars );
    }
 
    /**
@@ -352,7 +364,7 @@ public:
     */
    inline string & trimEnd( )   
    { 
-      return trimEnd( " " ); 
+      return this->trimEnd( " " ); 
    }
 
    /**
@@ -499,7 +511,7 @@ public:
    bool isNumber() const
    {
       bool ret = true;
-      for ( unsigned i=0; i<strLength; i++)
+      for ( unsigned i=0; i<this->strLength; i++)
       {
          if ( !isdigit( buffer[i] ) )
          {
@@ -515,10 +527,10 @@ public:
     */
    void empty ()
    {
-      if ( bufferLength )
+      if ( this->bufferLength )
       {
-         buffer[0] = 0;
-         strLength = 0;
+         this->buffer[0] = 0;
+         this->strLength = 0;
       }
    }
 
@@ -529,9 +541,11 @@ private:
    // Internal function that clears the content of a string
    void emptyIt ()
    {
-      if ( bufferLength )
-         free( buffer );
-      init();
+      if ( this->bufferLength )
+      {
+         free( this->buffer );
+      }
+      this->init();
    }
 
 
@@ -554,8 +568,10 @@ private:
    inline int compare(const char *text, size_t len = 0, size_t index = 0) const
    {
       if(!text)
+      {
          text = "";
-      return index > strLength ? -1 : len ? strncmp( buffer + index, text, len) : strcmp( buffer + index, text);
+      }
+      return index > this->strLength ? -1 : len ? strncmp( this->buffer + index, text, len) : strcmp( this->buffer + index, text);
    }
 
 };

@@ -25,25 +25,34 @@ WebSite: http://www.cs.dal.ca/~zyu
 
 #include "mystring.h"
 
+#define D(x)
 #define MAX(a,b) a>b ? a : b;
 string::string( const char * cstring )
 {
    assert ( cstring );
-   size_t newlen = strlen ( cstring ) + 1;
-   buffer = ( char * )malloc( newlen );
-   if ( buffer )
+   if ( cstring )
    {
-      memcpy ( buffer, cstring, newlen);
-      bufferLength = newlen;
-      strLength = newlen - 1;
+   	  this->bufferLength = ( this->strLength = strlen( cstring ) ) + 1;
+   	  if ( ( this->buffer = ( char * ) malloc( this->bufferLength ) ) )
+   	  {
+         memcpy ( this->buffer, cstring, this->bufferLength );
+   	  }
+   	  else
+   	  {
+   	     this->init();
+   	  }
+   }
+   else
+   {
+      this->init();
    }
 }
 
 string::string( const char ch ) : strLength(1), bufferLength(2)
 {
-   if ( ( buffer = ( char * ) calloc( 2, 1 ) ) )
+   if ( ( this->buffer = ( char * ) calloc( 2, 1 ) ) )
    {
-      buffer[0]= ch;
+      this->buffer[0]= ch;
    }
 }
 
@@ -51,49 +60,41 @@ string::string ( int value )
 {
    char valueBuffer[32];
    sprintf( valueBuffer, "%d", value );
-   strLength = strlen( valueBuffer );
-   this->resize( strLength+1 );
-   memcpy( buffer, valueBuffer, bufferLength ); 
+   this->strLength = strlen( valueBuffer );
+   this->resize( this->strLength + 1 );
+   memcpy( this->buffer, valueBuffer, this->bufferLength ); 
 }
 
 string::string( size_t len, const char chr )
 {
-   resize( len + 1);
-   memset( buffer, chr, len);
-   strLength = len;
+   this->resize( len + 1);
+   memset( this->buffer, chr, len);
+   this->strLength = len;
 }
 
 string::string( const string & copy ) 
 {
-   //   if ( &copy != this )
-   //   {
    if ( copy.bufferLength )
    {
-      size_t newlen = copy.strLength + 1;
-      buffer = (char*) malloc( newlen );
-      if ( buffer )
+      this->bufferLength = ( this->strLength = copy.strLength ) + 1;
+      if ( ( this->buffer = (char*) malloc( this->bufferLength ) ) )
       {
-         memcpy ( buffer, copy.buffer, newlen );
-         bufferLength = newlen;
-         strLength = newlen - 1;
+         memcpy ( this->buffer, copy.buffer, this->bufferLength );
+      }
+      else
+      {
+         this->init();
       }
    }
    else
    {
-      init(); // initialize the string object
+      this->init(); // initialize the string object
    }
 
-   //   }
 }
 
 string::string( const string &str, size_t start, size_t len )
 {
-   /*if( start > str.length() || start < 0 || len < 0 )
-   {
-      throw StringIndexOutOfBounds();
-      return;
-   }
-   */
    assert ( start <= str.length() );
    // if given length is overpass the size of string, use the longest substring available.
    size_t count = str.length() - start;
@@ -101,11 +102,14 @@ string::string( const string &str, size_t start, size_t len )
    {
       count = len;
    }
-   bufferLength = count + 1;
-   buffer = ( char* ) malloc( bufferLength );
-   memcpy ( buffer, str.c_str() + start, count );
-   buffer[ count ] =0;
-   strLength = count;
+   this->bufferLength = ( this->strLength = ( str.length() - start ) ) + 1;
+   if ( len < this->bufferLength )
+   {
+      this->bufferLength = ( this->strLength = len ) + 1;
+   }
+   this->buffer = ( char* ) malloc( this->bufferLength );
+   memcpy ( this->buffer, str.c_str() + start, this->strLength );
+   buffer[ this->strLength ] =0;
 }
 
 
@@ -114,22 +118,22 @@ const string & string::operator = ( const char * content )
 {
    if ( content )
    {
-      strLength = strlen (content);
-      if ( !bufferLength )
+      this->strLength = strlen (content);
+      if ( !this->bufferLength )
       {
-         bufferLength = strLength + 1;
-         buffer = ( char * ) malloc( bufferLength );
+         this->bufferLength = this->strLength + 1;
+         this->buffer = ( char * ) malloc( this->bufferLength );
       }
-      else if ( bufferLength <= strLength )
+      else if ( this->bufferLength <= this->strLength )
       {
-         bufferLength = strLength + 1;
-         buffer = ( char * ) realloc( buffer, bufferLength );
+         this->bufferLength = this->strLength + 1;
+         this->buffer = ( char * ) realloc( this->buffer, this->bufferLength );
       }
-      memcpy ( buffer, content, strLength + 1 );
+      memcpy ( this->buffer, content, this->strLength + 1 );
    }
    else
    {
-      emptyIt ();
+      this->emptyIt ();
    }
    return *this;
 }
@@ -139,33 +143,18 @@ const string & string::operator=( const string & copy )
    // Prevent copy to self! if copy itself, do nothing.
    if ( &copy != this ) 
    {
-      strLength = copy.strLength;
-      if ( !bufferLength )
+      this->strLength = copy.strLength;
+      if ( !this->bufferLength )
       {
-         bufferLength = strLength + 1;
-         buffer = ( char * ) malloc( bufferLength );
+         this->bufferLength = this->strLength + 1;
+         this->buffer = ( char * ) malloc( this->bufferLength );
       }
-      else if ( bufferLength <= strLength )
+      else if ( this->bufferLength <= this->strLength )
       {
-         bufferLength = strLength + 1;
-         buffer = ( char * ) realloc( buffer, bufferLength );
+         this->bufferLength = this->strLength + 1;
+         this->buffer = ( char * ) realloc( this->buffer, this->bufferLength );
       }
-      memcpy ( buffer, copy.buffer, strLength + 1 );
-
-/*
-      if ( copy.bufferLength > 0 )
-      {
-         size_t newlen = copy.strLength + 1;
-         //char * newstring = (char*)malloc( newlen );
-         if ( newstring )
-         {
-            memcpy ( newstring, copy.buffer, newlen );
-            bufferLength = newlen;
-            buffer = newstring;
-            strLength = copy.strLength;
-         }
-      }
-      */
+      memcpy ( this->buffer, copy.buffer, this->strLength + 1 );
    }
    return *this;
 }
@@ -173,14 +162,16 @@ const string & string::operator=( const string & copy )
 
 const string & string::operator=( const char ch )
 {
-   emptyIt();
-   char * newstring = (char*) calloc( 2, 1 );
-   newstring[0] = ch;
-   if ( newstring )
+   this->emptyIt();
+
+   this->bufferLength = 2;
+   if ( ( this->buffer = (char*) calloc( this->bufferLength, 1 ) ) )
    {
-      bufferLength = 2;
-      buffer = newstring;
-      strLength = 1;
+      this->strLength = 1;
+   }
+   else
+   {
+      this->init();
    }
    return *this;
 }
@@ -213,8 +204,7 @@ inline string operator + ( const char c1, const string &s2)
 // append a const char * to an existing string
 string & string::append( const char* str, size_t len )
 {
-   char * new_string;
-   size_t new_alloc, new_size, size_suffix=0;
+   size_t size_suffix=0;
 
    // don't use strlen - it can overrun the len passed in!
    // following codes get the char* length
@@ -228,52 +218,52 @@ string & string::append( const char* str, size_t len )
    if ( !size_suffix)
       return *this;
 
-   new_size = length () + size_suffix + 1;
+   size_t new_size = length () + size_suffix + 1;
    // check if we need to expand
-   if ( new_size > bufferLength )
+   if ( new_size > this->bufferLength )
    {
       // compute new size
-      new_alloc = assign_new_size ( new_size );
+      size_t new_alloc = this->assign_new_size ( new_size );
 
       // allocate new buffer
-      new_string = (char*) malloc( new_alloc );        
+      char * new_string = (char*) malloc( new_alloc );        
       new_string [ 0 ] = 0;
 
       // copy the previous allocated buffer into this one
-      if ( bufferLength && buffer )
-         memcpy ( new_string, buffer, length () );
+      if ( this->bufferLength && this->buffer )
+         memcpy ( new_string, this->buffer, this->length () );
 
       // append the suffix. It does exist, otherwize we wouldn't be expanding 
       memcpy ( new_string + length (), str, size_suffix );
 
       // return previsously allocated buffer if any
-      if ( bufferLength && buffer )
-         free ( buffer );
+      if ( this->bufferLength && this->buffer )
+         free ( this->buffer );
 
       // update member variables
-      buffer = new_string;
-      bufferLength = new_alloc;
+      this->buffer = new_string;
+      this->bufferLength = new_alloc;
    }
    else
    {
       // we know we can safely append the new string
-      memcpy ( buffer + length (), str, size_suffix );
+      memcpy ( this->buffer + this->length (), str, size_suffix );
    }
-   strLength = new_size - 1;
-   buffer [ strLength ] = 0;
+   this->strLength = new_size - 1;
+   this->buffer [ strLength ] = 0;
    return *this;
 
 }
 
 inline string & string::append(char c)
 {
-   size_t len = length();
-   if( len + 1 >= getSize() )
-      resize(len + 2);
+   size_t len = this->length();
+   if( len + 1 >= this->getSize() )
+      this->resize(len + 2);
 
-   buffer[len++] = c;
-   strLength =len;
-   buffer[len] = 0;
+   this->buffer[len++] = c;
+   this->strLength =len;
+   this->buffer[len] = 0;
    return *this;
 }
 
@@ -282,17 +272,13 @@ inline string & string::append(char c)
 char & string::operator[ ]( unsigned k )
 {
    assert( k < strLength );
-   //if( k < 0 || k >= strLength )
-   //   throw StringIndexOutOfBounds( );
-   return buffer[ k ];
+   return this->buffer[ k ];
 }
 
 char string::operator[ ]( unsigned k ) const
 {
    assert ( k < strLength );
-   //if( k < 0 || k >= strLength )
-   //   throw StringIndexOutOfBounds( );
-   return buffer[ k ];
+   return this->buffer[ k ];
 }
 
 ostream & operator<<( ostream & out, const string & str )
@@ -320,15 +306,14 @@ istream & getline( istream & in, string & str )
 
 void string::reserve ( size_t size )
 {
-   emptyIt ();
+   this->emptyIt ();
    if (size)
    {
-      buffer = (char*)malloc( size );
-      if ( buffer )
+      if ( ( this->buffer = (char*)malloc( size ) ) )
       {
-         bufferLength = size;
-         buffer [0] = 0;
-         strLength = 0;
+         this->bufferLength = size;
+         this->buffer [0] = 0;
+         this->strLength = 0;
       }
    }
 }
@@ -336,20 +321,14 @@ void string::reserve ( size_t size )
 void string::resize(size_t newSize )
 {
    newSize = newSize > 0 ? newSize : 0;
-   buffer = ( char* )realloc( buffer, newSize );
-   if ( buffer )
+   if ( ( this->buffer = ( char* )realloc( buffer, newSize ) ) )
    {
-   /*   if ( strLength > newSize )
-      {
-         strLength = newSize > 0 ? newSize - 1 : 0;
-      }
-      */
-      buffer[ strLength ] = 0;
-      bufferLength = newSize;
+      this->buffer[ this->strLength ] = 0;
+      this->bufferLength = newSize;
    }
    else
    {
-      init();
+      this->init();
    }
 }
 
@@ -360,35 +339,35 @@ void string::squeeze ()
 
 inline void string::init()
 {
-   buffer = NULL;
-   bufferLength = strLength = 0;
+   this->buffer = NULL;
+   this->bufferLength = this->strLength = 0;
 }
 
 inline void string::insert( size_t start, const char *str )
 {
-   insert( start, str, strlen( str ) );
+   this->insert( start, str, strlen( str ) );
 }
 
 inline void string::insert( size_t start, const string &str )
 {
-   insert( start, str.c_str(), str.length() );
+   this->insert( start, str.c_str(), str.length() );
 }
 
 void string::insert( size_t start, const char *str, size_t len )
 {
 
 
-   if( !str || len<=0 || start < 0 || start > strLength  )
+   if( !str || len<=0 || start < 0 || start > this->strLength  )
       return;
 
-   if( strLength + len +1 >= bufferLength )
+   if( this->strLength + len +1 >= this->bufferLength )
    {
       resize( strLength + len + 1);
    }
 
-   memmove( buffer + start + len, buffer + start, strLength - start );
-   memmove( buffer + start, str, len );
-   strLength += len;
+   memmove( this->buffer + start + len, this->buffer + start, this->strLength - start );
+   memmove( this->buffer + start, str, len );
+   this->strLength += len;
    return;
 }   
 
@@ -429,15 +408,14 @@ string & string::trimEnd( const char * trimChars )
 
    size_t len = strlen( trimChars );
 
-   if ( !isNull() && !isEmpty() )
+   if ( !this->isNull() && !this->isEmpty() )
    {
-      if ( len <= strLength )
+      if ( len <= this->strLength )
       {
-         if ( 0 == memcmp( buffer + strLength - len, trimChars, len ) )
+         if ( 0 == memcmp( this->buffer + this->strLength - len, trimChars, len ) )
          {
-            strLength -= len;
-            buffer[ strLength ] =0;
-
+            this->strLength -= len;
+            this->buffer[ strLength ] =0;
          }
       }
    }
@@ -452,15 +430,15 @@ string & string::trimStart( const char *trimChars )
 
    size_t len = strlen( trimChars );
 
-   if ( !isNull() && !isEmpty() )
+   if ( !this->isNull() && !this->isEmpty() )
    {
-      if ( len <= strLength )
+      if ( len <= this->strLength )
       {
-         if ( 0 == memcmp( buffer, trimChars, len ) )
+         if ( 0 == memcmp( this->buffer, trimChars, len ) )
          {
-            memmove( buffer, buffer + len, strLength - len );
-            strLength -= len;
-            buffer[ strLength ] = 0;
+            memmove( this->buffer, this->buffer + len, this->strLength - len );
+            this->strLength -= len;
+            this->buffer[ this->strLength ] = 0;
          }
       }
    }
@@ -469,32 +447,32 @@ string & string::trimStart( const char *trimChars )
 
 void string::remove( size_t startIndex, size_t count )
 {
-   if ( startIndex >= strLength )
+   if ( startIndex >= this->strLength )
       return;
 
-   if ( startIndex + count >= strLength || ! count )
+   if ( startIndex + count >= this->strLength || ! count )
    {
-      strLength = startIndex;
-      buffer [ strLength ] = 0;
+      this->strLength = startIndex;
+      this->buffer [ this->strLength ] = 0;
       return;
    }      
 
-   memmove( buffer + startIndex, buffer + startIndex + count, strLength - startIndex - count );
-   strLength -= count;
-   buffer[ strLength ] = 0;
+   memmove( this->buffer + startIndex, this->buffer + startIndex + count, this->strLength - startIndex - count );
+   this->strLength -= count;
+   this->buffer[ this->strLength ] = 0;
 }
 
 string & string::replace ( size_t startIndex, size_t len, const char *replChars, size_t count )
 {
    remove( startIndex, len);
-   insert( startIndex, replChars, count );
+   this->insert( startIndex, replChars, count );
    return *this;
 }
 
 string & string::replace(size_t startIndex, size_t len, const string &replStr)
 {
    remove( startIndex, len );
-   insert( startIndex, replStr );
+   this->insert( startIndex, replStr );
    return *this;
 }
 
@@ -519,10 +497,10 @@ return ret;
 int string::getOccurrence( const char * chars ) const
 {
    int count = 0, index = 0;
-   while ( ( index = indexOf( chars, (size_t)index )  ) != -1 )
+   while ( ( index = this->indexOf( chars, (size_t)index )  ) != -1 )
    {
-      index++;
-      count ++;
+      ++index;
+      ++count;
    }
    return count;
 }
@@ -530,9 +508,9 @@ int string::getOccurrence( const char * chars ) const
 int string::indexOf( const char * chars, size_t startIndex, size_t len ) const
 {
    int index = -1;
-   if( chars && startIndex < strLength && len <= strLength )
+   if( chars && startIndex < this->strLength && len <= this->strLength )
    {
-      index = this->BoyerMooreSearch( buffer + startIndex, chars, len );
+      index = this->BoyerMooreSearch( this->buffer + startIndex, chars, len );
    }
    return index == -1 ? -1 :  index + (int)startIndex;
 }
@@ -545,9 +523,7 @@ int string::BoyerMooreSearch( const char * str, const char* pattern, size_t len 
    for( int i=0; i<max_chars; ++i )  skip[i] = (int)len;
    for( int i=0; i<(int)len; ++i ) skip[ (unsigned char)pattern[i] ] = (int)len - i - 1;
 
-   int textIndex;
-   int patternIndex;
-   int intLen = (int)strlen( str );
+   int textIndex, patternIndex, intLen = (int)strlen( str );
    for( textIndex = patternIndex = (int)len-1; patternIndex >= 0; --textIndex, --patternIndex )
    {
       while( str[textIndex] != pattern[patternIndex] ) 
