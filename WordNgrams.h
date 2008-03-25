@@ -182,7 +182,7 @@ private:
 		int loop = 0;
 		const char * p = ngram.c_str();
 		unsigned char buff[32];
-		unsigned char delimiter = unsigned char(ENCODE_WORD_DELIMITER);
+		char delimiter = ENCODE_WORD_DELIMITER;
 		while ( loop++ < n )
 		{
 			while ( *p != delimiter && *p != '\0' )
