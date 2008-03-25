@@ -178,7 +178,7 @@ public:
          throw ArrayIndexOutOfBoundsException( );
       }
       */
-      assert( index >= 0 && index < currentSize );
+      assert( index < currentSize );
       return objects[ index ];
    }
 
