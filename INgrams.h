@@ -164,11 +164,11 @@ public:
 		*/
 	}
 #endif
-	static int compareFunction (const void * a, const void * b)		/* sort by frequency */
+	static int compareFunction (const void * a, const void * b)		/* sort by frequency and word */
 	{
 		int freq1 = ( *( ( NgramToken ** ) a ) )->value.frequency;
 		int freq2 = ( *( ( NgramToken ** ) b ) )->value.frequency;
-        return freq1 > freq2 ? -1 : freq1 == freq2 ? 0 : 1;
+        return freq1 > freq2 ? -1 : freq1 == freq2 ? strcmp( ( ( *( NgramToken** )a ) )->ngram.c_str(), ( *( ( NgramToken** )b ) )->ngram.c_str() ) : 1;
 		
 	}
 	/**
