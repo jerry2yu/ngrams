@@ -48,13 +48,12 @@ void WordNgrams::addTokens()
 	}
 
 	int count = 0;
-	unsigned char c;
+	int c;
 	bool isSpecialChar = false;
 	string token;
 	token.reserve(256);
-	while ( ( c = (unsigned char) fgetc( fp ) ) != EOF )
+	while ( ( c = fgetc( fp ) ) != EOF )
 	{
-		printf("%C", c);
 		if ( isDelimiter( c ) || isStopChar ( c ) )
 		{
 			if ( !isSpecialChar && token.length() >0 )
@@ -118,7 +117,7 @@ void WordNgrams::preParse( int count )
 			}
 			else
 			{
-				ngram += unsigned char( ENCODE_WORD_DELIMITER );
+				ngram += ENCODE_WORD_DELIMITER;
 			}
 			p = p->next;
 
@@ -144,7 +143,7 @@ void WordNgrams::parse()
 			++n;
 			p = p->next;
 			if ( p )
-				ngram += unsigned char( ENCODE_WORD_DELIMITER );
+				ngram += ENCODE_WORD_DELIMITER;
 
 		}
 		//printf("%d ngram %s.\n", n, ngram.c_str() );
