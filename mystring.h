@@ -513,7 +513,7 @@ public:
       bool ret = true;
       for ( unsigned i=0; i<this->strLength; i++)
       {
-         if ( !isdigit( buffer[i] ) )
+         if ( !isdigit( (unsigned char)buffer[i] ) )
          {
             ret = false;
             break;

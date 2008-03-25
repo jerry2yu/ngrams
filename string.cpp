@@ -167,6 +167,7 @@ const string & string::operator=( const char ch )
    this->bufferLength = 2;
    if ( ( this->buffer = (char*) calloc( this->bufferLength, 1 ) ) )
    {
+      this->buffer[0] = ch;
       this->strLength = 1;
    }
    else
