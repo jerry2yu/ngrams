@@ -176,7 +176,7 @@ public:
       return *this;
    }
 
-   string & operator += ( const char single )
+   string & operator += ( int single )
    {
       this->append (single);
       return *this;
@@ -275,7 +275,7 @@ public:
    }
 
    // append for a single char.
-   string & append(char c);
+   string & append(int c);
 
    /**
     * Insert c_string into a string.

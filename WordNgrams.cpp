@@ -71,7 +71,7 @@ void WordNgrams::addTokens()
 		}
 		else
 		{
-			token.append( c );
+			token.append( (char)c );
 			isSpecialChar = false;
 		}
 	}
@@ -128,28 +128,30 @@ void WordNgrams::preParse( int count )
 
 void WordNgrams::parse()
 {
-	TokenNode * p, * newHead;
-	p = newHead = head;
+	TokenNode * tokenNode, * newHead = head;
 	string ngram;
 	ngram.reserve( 256 );
+	unsigned short ngramOrder;
 	while ( newHead )
 	{
-		unsigned short n = 0;
-		p = newHead;
+	   ngramOrder = 0;
+		tokenNode = newHead;
 		ngram.empty();
-		while ( p )
+		while ( tokenNode )
 		{
-			ngram += p->token;
-			++n;
-			p = p->next;
-			if ( p )
+			ngram += tokenNode->token;
+			++ngramOrder;
+			tokenNode = tokenNode->next;
+			if ( tokenNode )
+			{
 				ngram += ENCODE_WORD_DELIMITER;
-
+			}
 		}
+		
 		//printf("%d ngram %s.\n", n, ngram.c_str() );
-		if ( n > 0 )
+		if ( ngramOrder > 0 )
 		{
-			this->addNgram( ngram.c_str(), n );
+			this->addNgram( ngram.c_str(), ngramOrder );
 		}
 		newHead = newHead->next;
 	}

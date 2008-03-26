@@ -178,14 +178,12 @@ private:
 	void decodeWordNgram( const string & ngram, int n, string & decodedNgram )
 	{
 		//printf("outputWordNgram %s.\n", ngram.c_str() );
-		int index = 0;
-		int loop = 0;
+		int index = 0, loop = 0;
 		const char * p = ngram.c_str();
 		unsigned char buff[32];
-		char delimiter = ENCODE_WORD_DELIMITER;
 		while ( loop++ < n )
 		{
-			while ( *p != delimiter && *p != '\0' )
+			while ( *p != ENCODE_WORD_DELIMITER && *p != '\0' )
 			{
 				buff[ index ++ ] = (unsigned char)*p++;
 			}

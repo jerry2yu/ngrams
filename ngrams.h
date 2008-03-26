@@ -87,7 +87,7 @@ public:
 	* @param c - input character
 	* @return true if c is set to be a delimiter
 	*/
-	bool isDelimiter( char c ) const  
+	bool isDelimiter( int c ) const  
 	{ 
 		return strchr( this->delimiters.c_str(), c ) != NULL;
 	}
@@ -97,7 +97,7 @@ public:
 	* @param c - input char
 	* @return true if c is set to be a stop char
 	*/
-	bool isStopChar( char c ) const  
+	bool isStopChar( int c ) const  
 	{ 
 		return strchr( this->stopChars.c_str(), c ) != NULL;
 	}

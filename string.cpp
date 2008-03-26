@@ -35,7 +35,7 @@ string::string( const char * cstring )
    	  this->bufferLength = ( this->strLength = strlen( cstring ) ) + 1;
    	  if ( ( this->buffer = ( char * ) malloc( this->bufferLength ) ) )
    	  {
-         memcpy ( this->buffer, cstring, this->bufferLength );
+           memcpy ( this->buffer, cstring, this->bufferLength );
    	  }
    	  else
    	  {
@@ -256,13 +256,13 @@ string & string::append( const char* str, size_t len )
 
 }
 
-inline string & string::append(char c)
+inline string & string::append(int c)
 {
    size_t len = this->length();
    if( len + 1 >= this->getSize() )
       this->resize(len + 2);
 
-   this->buffer[len++] = c;
+   this->buffer[len++] = (char)c;
    this->strLength =len;
    this->buffer[len] = 0;
    return *this;
