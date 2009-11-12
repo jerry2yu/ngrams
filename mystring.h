@@ -28,6 +28,10 @@ WebSite: http://www.cs.dal.ca/~zyu
 
 #include <iostream>
 #include <assert.h>
+#include <cstdlib>
+#include <cstring>
+#include <cstdio>
+
 using namespace std;
 
 #define string String
