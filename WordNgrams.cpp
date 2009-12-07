@@ -126,7 +126,7 @@ void WordNgrams::preParse( int count )
 			}
 			else
 			{
-				ngram += unsigned char( ENCODE_WORD_DELIMITER );
+				ngram += ENCODE_WORD_DELIMITER;
 			}
 			p = p->next;
 
@@ -152,7 +152,7 @@ void WordNgrams::parse()
 			++n;
 			p = p->next;
 			if ( p )
-				ngram += unsigned char( ENCODE_WORD_DELIMITER );
+				ngram += ENCODE_WORD_DELIMITER;
 
 		}
 		//printf("%d ngram %s.\n", n, ngram.c_str() );
