@@ -205,55 +205,25 @@ inline string operator + ( const char c1, const string &s2)
 // append a const char * to an existing string
 string & string::append( const char* str, size_t len )
 {
-   size_t size_suffix=0;
-
-   // don't use strlen - it can overrun the len passed in!
-   // following codes get the char* length
-   const char* p = str;
-
-   while ( *p && size_suffix < (unsigned)len )
+   if (str)
    {
-      ++p;
-      ++size_suffix;
-   }
-   if ( !size_suffix)
-      return *this;
-
-   size_t new_size = length () + size_suffix + 1;
-   // check if we need to expand
-   if ( new_size > this->bufferLength )
-   {
-      // compute new size
-      size_t new_alloc = this->assign_new_size ( new_size );
-
-      // allocate new buffer
-      char * new_string = (char*) malloc( new_alloc );        
-      new_string [ 0 ] = 0;
-
-      // copy the previous allocated buffer into this one
-      if ( this->bufferLength && this->buffer )
-         memcpy ( new_string, this->buffer, this->length () );
-
-      // append the suffix. It does exist, otherwize we wouldn't be expanding 
-      memcpy ( new_string + length (), str, size_suffix );
-
-      // return previsously allocated buffer if any
-      if ( this->bufferLength && this->buffer )
-         free ( this->buffer );
-
-      // update member variables
-      this->buffer = new_string;
-      this->bufferLength = new_alloc;
-   }
-   else
-   {
-      // we know we can safely append the new string
-      memcpy ( this->buffer + this->length (), str, size_suffix );
-   }
-   this->strLength = new_size - 1;
-   this->buffer [ strLength ] = 0;
+      size_t previousLength = this->length();
+      
+      if (len + previousLength >= this->bufferLength)
+      {
+         this->resize (len + previousLength + 1);
+      }
+      
+      if (this->buffer)
+      {
+         memcpy (this->buffer + previousLength, str, len); 
+         
+         this->strLength += len;
+         
+         this->buffer [this->strLength] = '\0';
+      }
+   }     
    return *this;
-
 }
 
 inline string & string::append(int c)
