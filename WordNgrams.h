@@ -48,10 +48,10 @@ public:
     * Constructor
     */
 	WordNgrams( int newNgramN, const char * newInFileName, const char * newOutFileName, const char * newDelimiters = Config::getDefaultDelimiters(), const char * newStopChars = Config::getDefaultStopChars() );
-   
-   /**
-    * Destructor
-    */
+
+	/**
+	 * Destructor
+	 */
 	virtual ~WordNgrams();
 
 	/**
@@ -67,7 +67,7 @@ public:
 	*/
 
 	void addToken ( const string & token );
-
+	
 	/**
 	* sort ngrams by frequency/ngram/or both, then output
 	*/
@@ -80,60 +80,11 @@ private:
 
 	// convert number base 10 to a number string in different base 
 	// base: max to ENCODE_BASE, we need leave one ascii as end of string sign, one for word seperator
-	void encodeInteger( int num, int bas, char* buff )
-	{
-	int oldNumber = num;
-		unsigned short index = 0;
-		int rem;
-		
-		while ( num >= bas )
-		{
-			rem = num % bas;
-
-			if ( rem == 0 )
-			{
-				rem = ENCODE_NULL;
-			}
-			num /= bas;
-			sprintf( buff + index++, "%c", rem );
-		}
-		
-		if ( num == 0 )
-		{
-			num = ENCODE_NULL;
-		}
-		sprintf( buff + index, "%c", num );
-		
-		//printf ("%d => %s\n", oldNumber, buff);
-		
-		int newNumber = this->decodeInteger ( buff, bas );
-		
-		if (oldNumber!= newNumber)
-		{
-		   printf ("Warning wrong encoding\n");
-		}
-
-	}
+	void encodeInteger( int num, int bas, char* buff );
 
 	// decode a number string in base x to an integer in base 10
 	// bas: max to ENCODE_BASE, we need leave one ascii as end of string sign and one for word seperator
-	int decodeInteger( const char * buffer, int bas )
-	{
-		int num=0, accumulate = 1;
-		unsigned short index = 0;
-		unsigned char c;
-		while ( ( c = buffer[index] ) != 0 )
-		{
-			//printf("%d.", c );
-			if ( index++ > 0 )
-			{
-				accumulate *= bas;
-			}
-			num += ( c == ENCODE_NULL ? 0 : c ) * accumulate;
-		}
-		//printf("\n");
-		return num;
-	}
+	int decodeInteger( unsigned char * buffer, int bas );
 
 	/**
 	* Generate ngrams when queue has NGRAM_N - 1 tokens.
@@ -155,6 +106,34 @@ private:
 	* before being inserted into ternary search tree
 	*/
 	unsigned AddToWordTable( const char * word );
+
+
+	/**
+	* output one id ngram (eg. 10_9_283 ) to word ngram ( eg. this_is_a )
+	*/
+	/*void outputWordNgram( const string & ngram, int frequency, int n )
+	{
+	int index = 0;
+	int loop = 0;
+	const char * p = ngram.c_str();
+	unsigned char buff[32];
+	char delimiter = char(ENCODE_WORD_DELIMITER);
+	while ( loop++ < n )
+	{
+	while ( *p != delimiter && *p != '\0' )
+	{
+	buff[ index ++ ] = (unsigned char)*p++;
+	}
+	p++;
+	buff[ index ] = '\0';
+	index = 0;
+	//printf("ID -- %d.\n", decodeInteger( buff, ENCODE_BASE ) );
+	printf("%s%c", this->wordTable.getKey( decodeInteger( buff, ENCODE_BASE ) ), loop < n ? '_' : '\t' );
+	}
+	printf( "%d\n", frequency );
+
+	}
+	*/
 
 	/**
 	* convert from id ( encoded ) into word ngram

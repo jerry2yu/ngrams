@@ -28,7 +28,7 @@ WebSite: http://www.cs.dal.ca/~zyu
 WordNgrams::WordNgrams( int newNgramN, const char * newInFileName, const char * newOutFileName, const char * newDelimiters, const char * newStopChars ) :
 Ngrams( newNgramN, newInFileName, newOutFileName, newDelimiters, newStopChars )
 {
-	this->addTokens();
+	addTokens();
 
 }
 
@@ -48,11 +48,11 @@ void WordNgrams::addTokens()
 	}
 
 	int count = 0;
-	int c;
+	char c;
 	bool isSpecialChar = false;
 	string token;
 	token.reserve(256);
-	while ( ( c = fgetc( fp ) ) != EOF )
+	while ( ( c = (char) fgetc( fp ) ) != EOF )
 	{
 		if ( isDelimiter( c ) || isStopChar ( c ) )
 		{
@@ -71,7 +71,7 @@ void WordNgrams::addTokens()
 		}
 		else
 		{
-			token.append( (char)c );
+			token.append( c );
 			isSpecialChar = false;
 		}
 	}
@@ -90,7 +90,7 @@ void WordNgrams::addTokens()
 
 	for ( int i=0; i< padding; i++)
 	{
-	this->addToken( "_" );
+	addToken( "_" );
 	}
 	*/
 	fclose( fp );
@@ -98,29 +98,13 @@ void WordNgrams::addTokens()
 
 void WordNgrams::addToken ( const string & token )
 {
-printf ("WordNgrams::addToken adding %s\n", token.c_str());
-	char buff[32];
-	char * s = token.isNumber() ?  "<NUMBER>" : token.c_str();
-	int index = this->AddToWordTable( s );
-	
-	if ( strcmp ( s, this->wordTable.getKey (index) ) != 0)
-	{
-	   printf ("Warning wrong word\n");
-	}
-	
-	this->encodeInteger( index , ENCODE_BASE, buff );
-	
-	int newIndex = this->decodeInteger (buff, ENCODE_BASE);
-	
-	if ( index != newIndex)
-	{
-	   printf ("WARNING wrong index\n");
-	}
-	
-	//printf("wordNgram::addtoken %s.\n", token.c_str() );
-	this->Ngrams::addToken( buff );
+   char buff[32];
+   
+   this->encodeInteger( this->AddToWordTable( token.isNumber() ?  "<NUMBER>" : token.c_str() ), ENCODE_BASE, buff );
+      
+   this->Ngrams::addToken( buff );
 }
-
+	
 void WordNgrams::preParse( int count )
 {
 	TokenNode * p, * newHead;
@@ -134,16 +118,15 @@ void WordNgrams::preParse( int count )
 		for ( unsigned short i = 0; i< count; i++ )
 		{
 			ngram += p->token;
-
+			//printf("%d ngram %s.\n", i, ngram.c_str() );
 			this->addNgram( ngram.c_str(), i+1 );
-			
 			if ( p == tail )
 			{
 				break;
 			}
 			else
 			{
-				ngram += ENCODE_WORD_DELIMITER;
+				ngram += unsigned char( ENCODE_WORD_DELIMITER );
 			}
 			p = p->next;
 
@@ -154,30 +137,28 @@ void WordNgrams::preParse( int count )
 
 void WordNgrams::parse()
 {
-	TokenNode * tokenNode, * newHead = head;
+	TokenNode * p, * newHead;
+	p = newHead = head;
 	string ngram;
 	ngram.reserve( 256 );
-	unsigned short ngramOrder;
 	while ( newHead )
 	{
-	   ngramOrder = 0;
-		tokenNode = newHead;
+		unsigned short n = 0;
+		p = newHead;
 		ngram.empty();
-		while ( tokenNode )
+		while ( p )
 		{
-			ngram += tokenNode->token;
-			++ngramOrder;
-			tokenNode = tokenNode->next;
-			if ( tokenNode )
-			{
-				ngram += ENCODE_WORD_DELIMITER;
-			}
+			ngram += p->token;
+			++n;
+			p = p->next;
+			if ( p )
+				ngram += unsigned char( ENCODE_WORD_DELIMITER );
+
 		}
-		
-		printf("%d ngram %s.\n", ngramOrder, ngram.c_str() );
-		if ( ngramOrder > 0 )
+		//printf("%d ngram %s.\n", n, ngram.c_str() );
+		if ( n > 0 )
 		{
-			this->addNgram( ngram.c_str(), ngramOrder );
+			this->addNgram( ngram.c_str(), n );
 		}
 		newHead = newHead->next;
 	}
@@ -187,7 +168,7 @@ void WordNgrams::parse()
 unsigned WordNgrams::AddToWordTable( const char * word )
 {
 	unsigned id;
-	unsigned * value = this->wordTable.getValue( word );
+	unsigned * value = wordTable.getValue( word );
 	if ( value )
 	{
 		id = *value;
@@ -233,33 +214,6 @@ void WordNgrams::output()
 
 }
 
-void WordNgrams::decodeWordNgram( const string & ngram, int n, string & decodedNgram )
-{
-	//printf("outputWordNgram %s.\n", ngram.c_str() );
-	int index = 0, loop = 0;
-	const char * buff = ngram.c_str();
-   //		unsigned char buff[32];
-	while ( loop++ < n )
-	{
-      /*while ( *p != ENCODE_WORD_DELIMITER && *p != ENCODE_NULL )
-		{
-			buff[ index ++ ] = (unsigned char)*p++;
-		}
-		++p;
-		buff[ index ] = ENCODE_NULL;
-		index = 0;
-      */
-   
-      //printf("ID -- %d.\n", this->decodeInteger( buff, ENCODE_BASE ) );
-	   decodedNgram += this->wordTable.getKey( this->decodeInteger( ngram.c_str(), ENCODE_BASE ) );
-	
-	   if ( loop < n )
-	   {
-		   decodedNgram.append( '_' );
-		}
-	}
-}
-
 void WordNgrams::getNgrams( vector< NgramToken * > & ngramVector, int n )
 {
 
@@ -268,8 +222,6 @@ void WordNgrams::getNgrams( vector< NgramToken * > & ngramVector, int n )
 	size_t count = itemVector.count();
 	string decodedKey;
 	decodedKey.reserve( 256 );
-	
-	printf ("Total %d ngrams\n", count);
 	for ( unsigned i=0; i < count; i++ )
 	{
 		TstItem< NgramValue > * item = itemVector[i];
@@ -280,6 +232,83 @@ void WordNgrams::getNgrams( vector< NgramToken * > & ngramVector, int n )
 			this->decodeWordNgram( item->key, n, decodedKey );
 			ngramVector.add( new NgramToken( decodedKey, item->value ) );
 			//ngramVector.add( NgramToken( decodedKey, item->value ) );
+		}
+	}
+}
+
+void WordNgrams::encodeInteger( int num, int bas, char* buff )
+{
+   unsigned short index = 0;
+   int rem;
+   
+   while ( num >= bas )
+   {
+      rem = num % bas;
+      //rem = rem == 0 ? ENCODE_NULL : rem;
+      if ( !rem )
+      {
+         rem = ENCODE_NULL;
+      }
+      num /= bas;
+      sprintf( buff + index++, "%c", rem );
+   }
+   
+   if ( !num )
+   {
+      num = ENCODE_NULL;
+   }
+   sprintf( buff + index, "%c%c", num, '\0' );
+}
+
+int WordNgrams::decodeInteger( unsigned char * buffer, int bas )
+{
+   int num=0, accumulate = 1;
+   unsigned short index = 0;
+   unsigned char c;
+   while ( ( c = buffer[index] ) != 0 )
+   {
+      //printf("%d.", c );
+      if ( index++ > 0 )
+      {
+         accumulate *= bas;
+      }
+      
+      if ( c == WordNgrams::ENCODE_WORD_DELIMITER )
+      {
+         break;
+      }
+      
+      num += ( c == ENCODE_NULL ? 0 : c ) * accumulate;
+   }
+   //printf("\n");
+   return num;
+}
+	
+void WordNgrams::decodeWordNgram( const string & ngram, int n, string & decodedNgram )
+{
+	//printf("outputWordNgram %s.\n", ngram.c_str() );
+	int index = 0;
+	int loop = 0;
+	const unsigned char * p = (unsigned char *)ngram.c_str();
+	unsigned char buff[32];
+
+	while ( loop++ < n )
+	{
+		while ( *p != WordNgrams::ENCODE_WORD_DELIMITER && *p != '\0' )
+		{
+			buff[ index ++ ] = (unsigned char)*p++;
+		}
+		
+		++p;
+		
+		buff[ index ] = '\0';
+		index = 0;
+		//printf("ID -- %d.\n", decodeInteger( buff, ENCODE_BASE ) );
+		
+		decodedNgram += this->wordTable.getKey( decodeInteger( buff, ENCODE_BASE ) );
+		if ( loop < n )
+		{
+			decodedNgram.append( '_' );
 		}
 	}
 }

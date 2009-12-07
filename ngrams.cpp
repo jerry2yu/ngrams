@@ -41,16 +41,16 @@ ngramN(newNgramN), inFileName(newInFileName), outFileName(newOutFileName)
 
 void Ngrams::addToken ( const string & token )
 {
-	int count = pushQueue( token.c_str() );
+	int count = this->pushQueue( token.c_str() );
 
 	if ( count == this->ngramN )
 	{
-		parse();
-		popQueue();
+		this->parse();
+		this->popQueue();
 	} 
 	else if ( count == this->ngramN - 1 )
 	{
-		preParse( count );
+		this->preParse( count );
 	} 
 
 }
