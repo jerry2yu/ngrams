@@ -44,7 +44,15 @@ class WordNgrams : public Ngrams
 
 public:
 
+   /**
+    * Constructor
+    */
 	WordNgrams( int newNgramN, const char * newInFileName, const char * newOutFileName, const char * newDelimiters = Config::getDefaultDelimiters(), const char * newStopChars = Config::getDefaultStopChars() );
+   
+   /**
+    * Destructor
+    */
+	virtual ~WordNgrams();
 
 	/**
 	* readin whole text file and feed in all tokens.
@@ -58,15 +66,7 @@ public:
 	* the token will be word string, 
 	*/
 
-	void addToken ( const string & token )
-	{
-		char buff[32];
-		encodeInteger( AddToWordTable( token.isNumber() ?  "<NUMBER>" : token.c_str() ), ENCODE_BASE, buff );
-		//printf("wordNgram::addtoken %s.\n", token.c_str() );
-		this->Ngrams::addToken( buff );
-	}
-
-	virtual ~WordNgrams();
+	void addToken ( const string & token );
 
 	/**
 	* sort ngrams by frequency/ngram/or both, then output
@@ -82,29 +82,42 @@ private:
 	// base: max to ENCODE_BASE, we need leave one ascii as end of string sign, one for word seperator
 	void encodeInteger( int num, int bas, char* buff )
 	{
+	int oldNumber = num;
 		unsigned short index = 0;
+		int rem;
+		
 		while ( num >= bas )
 		{
-			int rem = num % bas;
-			//rem = rem == 0 ? ENCODE_NULL : rem;
-			if ( !rem )
+			rem = num % bas;
+
+			if ( rem == 0 )
 			{
 				rem = ENCODE_NULL;
 			}
 			num /= bas;
 			sprintf( buff + index++, "%c", rem );
 		}
-		if ( !num )
+		
+		if ( num == 0 )
 		{
 			num = ENCODE_NULL;
 		}
-		sprintf( buff + index, "%c%c", num, '\0' );
+		sprintf( buff + index, "%c", num );
+		
+		//printf ("%d => %s\n", oldNumber, buff);
+		
+		int newNumber = this->decodeInteger ( buff, bas );
+		
+		if (oldNumber!= newNumber)
+		{
+		   printf ("Warning wrong encoding\n");
+		}
 
 	}
 
 	// decode a number string in base x to an integer in base 10
 	// bas: max to ENCODE_BASE, we need leave one ascii as end of string sign and one for word seperator
-	int decodeInteger( unsigned char * buffer, int bas )
+	int decodeInteger( const char * buffer, int bas )
 	{
 		int num=0, accumulate = 1;
 		unsigned short index = 0;
@@ -143,61 +156,11 @@ private:
 	*/
 	unsigned AddToWordTable( const char * word );
 
-
-	/**
-	* output one id ngram (eg. 10_9_283 ) to word ngram ( eg. this_is_a )
-	*/
-	/*void outputWordNgram( const string & ngram, int frequency, int n )
-	{
-	int index = 0;
-	int loop = 0;
-	const char * p = ngram.c_str();
-	unsigned char buff[32];
-	char delimiter = char(ENCODE_WORD_DELIMITER);
-	while ( loop++ < n )
-	{
-	while ( *p != delimiter && *p != '\0' )
-	{
-	buff[ index ++ ] = (unsigned char)*p++;
-	}
-	p++;
-	buff[ index ] = '\0';
-	index = 0;
-	//printf("ID -- %d.\n", decodeInteger( buff, ENCODE_BASE ) );
-	printf("%s%c", this->wordTable.getKey( decodeInteger( buff, ENCODE_BASE ) ), loop < n ? '_' : '\t' );
-	}
-	printf( "%d\n", frequency );
-
-	}
-	*/
-
 	/**
 	* convert from id ( encoded ) into word ngram
 	*/
 
-	void decodeWordNgram( const string & ngram, int n, string & decodedNgram )
-	{
-		//printf("outputWordNgram %s.\n", ngram.c_str() );
-		int index = 0, loop = 0;
-		const char * p = ngram.c_str();
-		unsigned char buff[32];
-		while ( loop++ < n )
-		{
-			while ( *p != ENCODE_WORD_DELIMITER && *p != '\0' )
-			{
-				buff[ index ++ ] = (unsigned char)*p++;
-			}
-			++p;
-			buff[ index ] = '\0';
-			index = 0;
-			//printf("ID -- %d.\n", decodeInteger( buff, ENCODE_BASE ) );
-			decodedNgram += this->wordTable.getKey( decodeInteger( buff, ENCODE_BASE ) );
-			if ( loop < n )
-			{
-				decodedNgram.append( '_' );
-			}
-		}
-	}
+	void decodeWordNgram( const string & ngram, int n, string & decodedNgram );
 
 	/** 
 	* get ngram list for given n
