@@ -56,22 +56,6 @@ string::string( const char ch ) : strLength(1), bufferLength(2)
    }
 }
 
-string::string ( int value ) 
-{
-   char valueBuffer[32];
-   sprintf( valueBuffer, "%d", value );
-   this->strLength = strlen( valueBuffer );
-   this->resize( this->strLength + 1 );
-   memcpy( this->buffer, valueBuffer, this->bufferLength ); 
-}
-
-string::string( size_t len, const char chr )
-{
-   this->resize( len + 1);
-   memset( this->buffer, chr, len);
-   this->strLength = len;
-}
-
 string::string( const string & copy ) 
 {
    if ( copy.bufferLength )

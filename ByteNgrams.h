@@ -23,83 +23,57 @@ WebSite: http://www.cs.dal.ca/~zyu
 
 *************************************************************************/
 
-#ifndef text2wfreq_h
-#define text2wfreq_h
+#ifndef _BYTE_NGRAMS_H_
+#define _BYTE_NGRAMS_H_
 
-#include "WordNgrams.h"
-#include "CharNgrams.h"
-#include "ByteNgrams.h"
+#include "ngrams.h"
 
 /**
-* This class utilizes WordNgrams and CharNgrams classes to generate and output ngrams.
+* this class implements all byte(unsigned char) ngram related operations
 * Revisions:
 * Feb 18, 2006. Jerry Yu
 * Initial implementation
 */
 
-class Text2wfreq
+class ByteNgrams : public Ngrams
 {
+
 public:
 
-	/**
-	* Constructor
-	*/
+	ByteNgrams( int newNgramN, const char * newInFileName, const char * newOutFileName, const char * newDelimiters = "", const char * newStopChars = "" );
 
-	Text2wfreq()
-	{
-		ngramN = Config::DEFAULT_NGRAM_N;
-		ngramType = Config::DEFAULT_NGRAM_TYPE;
-		inFileName = "";
-		outFileName = "";
-	}
+	virtual ~ByteNgrams();
 
-	~Text2wfreq()
-	{
-	}
-
+	void addTokens();
 
 	/**
-	* get options
+	* sort ngrams by frequency/ngram/or both, then output
 	*/
-	bool getOptions( int argc, char * argv[] );
 
-	/**
-	* display help information 
-	*/
-	void showHelp();
-
-	void printOptions ()
-	{
-		printf ( "ngramN %d, ngramType %s, inFileName %s, outFileName %s.\n", ngramN, ngramType == Config::CHAR_NGRAM?"character":"word", inFileName.c_str(), outFileName.c_str() );
-	}
-
-
-	int getNgramN() 
-	{
-		return ngramN;
-	}
-
-	int getNgramType()
-	{
-		return ngramType;
-	}
-
-	string getInFileName()
-	{
-		return inFileName;
-	}
-
-	string getOutFileName()
-	{
-		return outFileName;
-	}
+	void output();
 
 private:
-	int ngramN;	// default number of ngrams
-	int ngramType;	// default type
-	string inFileName;	// input text file name
-	string outFileName;	// output text file name
+
+	/**
+	* Generate ngrams when queue has NGRAM_N - 1 tokens.
+	* the token queue need to be processed specially for the first NGRAM_N - 1 tokens,
+	* also need to be called if less than NGRAM_N tokens in the whole input text.
+	* @param	count - total items in the queue
+	*/
+	void preParse( int count );
+
+	/**
+	* Once the queue is full, it will start to pop out ngrams
+	* for each new token pushing in
+	*/
+
+	void parse();
+
+	/**
+	* get all ngrams for given N
+	* @return total number of ngrams for the N
+	*/
+	void getNgrams( vector< NgramToken * > & ngramVector, int n );
 
 };
-
 #endif

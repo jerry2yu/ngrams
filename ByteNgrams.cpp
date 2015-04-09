@@ -23,74 +23,85 @@ WebSite: http://www.cs.dal.ca/~zyu
 
 *************************************************************************/
 
-#include "CharNgrams.h"
+#include "ByteNgrams.h"
 
-CharNgrams::CharNgrams( int newNgramN, const char * newInFileName, const char * newOutFileName, const char * newDelimiters, const char * newStopChars ) :
+ByteNgrams::ByteNgrams( int newNgramN, const char * newInFileName, const char * newOutFileName, const char * newDelimiters, const char * newStopChars ) :
 Ngrams( newNgramN, newInFileName, newOutFileName, newDelimiters, newStopChars )
 {
 	addTokens();
 }
 
-CharNgrams::~CharNgrams()
+ByteNgrams::~ByteNgrams()
 {
 }
 
-void CharNgrams::addTokens()
+void ByteNgrams::addTokens()
 {
 	// get token string from input file
 	string & inFileName = getInFileName();
-	FILE * fp = inFileName.length() > 0 ? fopen( inFileName.c_str(), "r" ) : stdin;
+	FILE * fp = inFileName.length() > 0 ? fopen( inFileName.c_str(), "rb" ) : stdin;
 
 	if (fp == NULL)
 	{
-		printf("CharNgrams:addTokens - failed to open file %s\n", inFileName.c_str());
+		printf("ByteNgrams:addTokens - failed to open file %s\n", inFileName.c_str());
 	}
 	else
 	{
+
 		int count = 0;
 		char c[2];
 		c[1]=0;
 		bool isSpecialChar = false;
+		unsigned char buffer[1024 * 32];
 
-		while ( ( c[0] = (char) toupper(fgetc( fp ) )) != EOF )
+		while (true)
 		{
-			if ( isStopChar( c[0] ) )
-			{
-				c[0]=this->delimiters[0];
-			}
+			size_t bytesRead = fread(buffer, 1, sizeof(buffer), fp);
 
-			if ( isDelimiter( c[0] ) )
+			printf("bytes read %d bytes. buffer size %d\n", (int)bytesRead, (int)sizeof(buffer));
+			for (size_t i=0; i<bytesRead; i++)
 			{
-				c[0] = '_';
-				if ( !isSpecialChar )
+				c[0] = buffer[i];
+				if ( isStopChar( c[0] ) && this->delimiters.length() > 0)
+				{
+					c[0]=this->delimiters[0];
+				}
+
+				if ( isDelimiter( c[0] ) )
+				{
+					c[0] = '_';
+					if ( !isSpecialChar )
+					{
+						addToken( c );
+						count++;
+					}
+					isSpecialChar = true;
+
+				}
+				else
 				{
 					addToken( c );
+					isSpecialChar = false;
 					count++;
 				}
-				isSpecialChar = true;
-
 			}
-			else
+
+			if (bytesRead == 0)
 			{
-				addToken( c );
-				isSpecialChar = false;
-				count++;
+				break;
 			}
-
-
 		}
 		// special processing need to be done, if less than NGRAM_N tokens in the whole input text.
 		if ( count < this->getN() )
 		{
 			preParse( count );
 		}
+
 		fclose( fp );
 	}
 }
 
-
-
-void CharNgrams::preParse( int count )
+void ByteNgrams::preParse( int count )
 {
 	TokenNode * p, * newHead;
 	p = newHead = head;
@@ -116,7 +127,7 @@ void CharNgrams::preParse( int count )
 	}
 
 }
-void CharNgrams::parse()
+void ByteNgrams::parse()
 {
 	TokenNode * p, * newHead;
 	p = newHead = head;
@@ -142,13 +153,13 @@ void CharNgrams::parse()
 	}
 }
 
-void CharNgrams::output()
+void ByteNgrams::output()
 {
         int ngramN = this->getN();
 
-        printf("BEGIN OUTPUT\n");
-        printf("Total %d unique ngram in %d ngrams.\n", this->count(), this->total() );
-        fprintf( stderr, "Total %d unique ngram in %d ngrams.\n", this->count(), this->total() );
+        printf("BEGIN OUTPUT BYTE NGRAMS\n");
+        printf("Total %d unique ngrams in %d ngrams.\n", this->count(), this->total() );
+        fprintf( stderr, "Total %d unique ngrams in %d ngrams.\n", this->count(), this->total() );
 
         for ( int i=1; i<=ngramN; i++ )
         {
@@ -165,13 +176,18 @@ void CharNgrams::output()
                 for ( unsigned j=0; j < count; j++ )
                 {
                         NgramToken * ngramToken = ngramVector[ j ];
-                        printf("%s\t%d\n", ngramToken->ngram.c_str(), ngramToken->value.frequency );
+                        for (unsigned int k=0; k<ngramToken->ngram.length(); k++)
+                        {
+                        	unsigned char myChar = ngramToken->ngram.c_str()[k];
+                        	printf("0x%02x ", (unsigned int)(myChar & 0xFF));
+                        }
+                        printf("\t%d\n", ngramToken->value.frequency );
 						delete ngramToken;
                 }
         }
 }
 
-void CharNgrams::getNgrams( vector< NgramToken * > & ngramVector, int n )
+void ByteNgrams::getNgrams( vector< NgramToken * > & ngramVector, int n )
 {
 	// Get sorted item list
 	//Vector<string> & keyVector = getKeys( );

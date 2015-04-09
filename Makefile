@@ -19,8 +19,8 @@ CFLAGS = -g -Wall -Wpointer-arith $(DFLAG)
 #LDFLAGS = -g  -lresolv -ltcmalloc -L/home2/zyu/gprofiler/lib
 LDFLAGS = -g  -lresolv
 
-HDRS = mystring.h INgrams.h ngrams.h CharNgrams.h WordNgrams.h text2wfreq.h
-SRCS = string.cpp INgrams.cpp ngrams.cpp CharNgrams.cpp WordNgrams.cpp text2wfreq.cpp
+HDRS = mystring.h INgrams.h ngrams.h CharNgrams.h WordNgrams.h ByteNgrams.h text2wfreq.h
+SRCS = string.cpp INgrams.cpp ngrams.cpp CharNgrams.cpp WordNgrams.cpp ByteNgrams.cpp text2wfreq.cpp
 OBJS = $(SRCS:.c.cpp=.o)
 TARGET = ngrams
 
@@ -40,6 +40,7 @@ INgrams.o: INgrams.h
 ngrams.o: ngrams.h
 CharNgrams.o: CharNgrams.h
 WordNgrams.o: WordNgrams.h
+ByteNgrams.o: ByteNgrams.h
 text2wfreq.o: text2wfreq.h
 
 rebuild:

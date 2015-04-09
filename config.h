@@ -41,8 +41,12 @@ class Config
 public:
 	enum 
 	{ 
-		WORD_NGRAM,		// word ngram
-		CHAR_NGRAM		// char ngram
+		// word ngram
+		WORD_NGRAM,
+		// char ngram
+		CHAR_NGRAM,
+		// byte ngram
+		BYTE_NGRAM
 	};
 
 	enum 
@@ -62,7 +66,7 @@ public:
 
 	static const char * getDefaultDelimiters()
 	{
-		return " \t,.?;<>'\"`~!+-*/@#$%^&(){}[]|=\\:‘“”—";
+		return " \t,.?;<>'\"`~!+-*/@#$%^&(){}[]|=\\:Â‘Â“Â”Â—";
 	}
 
 	/**

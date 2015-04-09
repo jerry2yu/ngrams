@@ -51,6 +51,10 @@ bool Text2wfreq::getOptions( int argc, char * argv[] )
 	{
 		ngramType = Config::WORD_NGRAM; 
 	}
+	else if ( value == "byte" )
+	{
+		ngramType = Config::BYTE_NGRAM;
+	}
 	else if ( value != "" )
 	{
 		printf( "wrong type option!\n" );
@@ -79,7 +83,7 @@ void Text2wfreq::showHelp()
 	printf( "Compute all the word/char frequencies for the given text file.\n" );
 	printf( "Options:\n" );
 	printf( "--n=N			Number of ngrams, the default is %d-grams.\n", Config::DEFAULT_NGRAM_N );
-	printf( "--type=T		character or word, the default is %s.\n",(int) Config::DEFAULT_NGRAM_TYPE == (int)Config::WORD_NGRAM ? "word" : "character" );
+	printf( "--type=T		character, word or byte, the default is %s.\n",(int) Config::DEFAULT_NGRAM_TYPE == (int)Config::WORD_NGRAM ? "word" : (int) Config::DEFAULT_NGRAM_TYPE == (int)Config::CHAR_NGRAM ? "character" : "byte" );
 	printf( "--in=training files	default to stdin.\n");
 	printf( "--out=output file	default to stdout. ( currently stdout only )\n\n");
 
@@ -105,9 +109,13 @@ int main( int argc, char * argv[] )
 	{	// word ngrams
 		ngrams = new WordNgrams( tf.getNgramN(), tf.getInFileName().c_str(), tf.getOutFileName().c_str() );
 	}
-	else	// char ngrams
-	{
+	else if ( tf.getNgramType() == Config::CHAR_NGRAM )
+	{   // char ngrams
 		ngrams = new CharNgrams( tf.getNgramN(), tf.getInFileName().c_str(), tf.getOutFileName().c_str() );
+	}
+	else if ( tf.getNgramType() == Config::BYTE_NGRAM )
+	{   // byte ngrams
+		ngrams = new ByteNgrams( tf.getNgramN(), tf.getInFileName().c_str(), tf.getOutFileName().c_str() );
 	}
 
 	time_t midTime;

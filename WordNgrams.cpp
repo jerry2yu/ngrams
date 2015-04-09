@@ -41,59 +41,54 @@ void WordNgrams::addTokens()
 	// get token string from input file
 	string & inFileName = getInFileName();
 	FILE * fp = inFileName.length() > 0 ? fopen( inFileName.c_str(), "r" ) : stdin;
-	if ( !fp )
-	{
-		printf("Can not find file %s, use stdio as input.\n", inFileName.c_str() );
-		fp = stdin;
-	}
 
-	int count = 0;
-	char c;
-	bool isSpecialChar = false;
-	string token;
-	token.reserve(256);
-	while ( ( c = (char) fgetc( fp ) ) != EOF )
+	if (fp == NULL)
 	{
-		if ( isDelimiter( c ) || isStopChar ( c ) )
+		printf("WordNgrams:addTokens - failed to open file %s\n", inFileName.c_str());
+	}
+	else
+	{
+		int count = 0;
+		char c;
+		bool isSpecialChar = false;
+		string token;
+		token.reserve(256);
+		while ( ( c = (char) fgetc( fp ) ) != EOF )
 		{
-			if ( !isSpecialChar && token.length() >0 )
+			if ( isDelimiter( c ) || isStopChar ( c ) )
 			{
-				this->addToken( token );
-				token.empty();
-				++count;
-				isSpecialChar = true;
+				if ( !isSpecialChar && token.length() >0 )
+				{
+					this->addToken( token );
+					token.empty();
+					++count;
+					isSpecialChar = true;
+				}
+				else
+				{
+					isSpecialChar = false;
+				}
+
 			}
 			else
 			{
+				token.append( c );
 				isSpecialChar = false;
 			}
-
 		}
-		else
+		if ( token.length() > 0 )
 		{
-			token.append( c );
-			isSpecialChar = false;
+			++count;
+			this->addToken( token );
 		}
-	}
-	if ( token.length() > 0 )
-	{
-		++count;
-		this->addToken( token );
-	}
-	// special processing need to be done, if less than NGRAM_N tokens in the whole input text.
-	if ( count < this->getN() )
-	{
-		preParse( count );
-	}
+		// special processing need to be done, if less than NGRAM_N tokens in the whole input text.
+		if ( count < this->getN() )
+		{
+			preParse( count );
+		}
 
-	/*	int padding = ngramN - count % ngramN;
-
-	for ( int i=0; i< padding; i++)
-	{
-	addToken( "_" );
+		fclose( fp );
 	}
-	*/
-	fclose( fp );
 }
 
 void WordNgrams::addToken ( const string & token )
