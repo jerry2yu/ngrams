@@ -49,41 +49,20 @@ void ByteNgrams::addTokens()
 	{
 
 		int count = 0;
-		char c[2];
-		c[1]=0;
-		bool isSpecialChar = false;
+		char c[3];
+		c[1] = 0;
+		c[2] = 0;
 		unsigned char buffer[1024 * 32];
 
 		while (true)
 		{
 			size_t bytesRead = fread(buffer, 1, sizeof(buffer), fp);
 
-			printf("bytes read %d bytes. buffer size %d\n", (int)bytesRead, (int)sizeof(buffer));
 			for (size_t i=0; i<bytesRead; i++)
 			{
-				c[0] = buffer[i];
-				if ( isStopChar( c[0] ) && this->delimiters.length() > 0)
-				{
-					c[0]=this->delimiters[0];
-				}
-
-				if ( isDelimiter( c[0] ) )
-				{
-					c[0] = '_';
-					if ( !isSpecialChar )
-					{
-						addToken( c );
-						count++;
-					}
-					isSpecialChar = true;
-
-				}
-				else
-				{
-					addToken( c );
-					isSpecialChar = false;
-					count++;
-				}
+				sprintf(c, "%02x", buffer[i]);
+				addToken( c );
+				count++;
 			}
 
 			if (bytesRead == 0)
@@ -176,13 +155,10 @@ void ByteNgrams::output()
                 for ( unsigned j=0; j < count; j++ )
                 {
                         NgramToken * ngramToken = ngramVector[ j ];
-                        for (unsigned int k=0; k<ngramToken->ngram.length(); k++)
-                        {
-                        	unsigned char myChar = ngramToken->ngram.c_str()[k];
-                        	printf("0x%02x ", (unsigned int)(myChar & 0xFF));
-                        }
-                        printf("\t%d\n", ngramToken->value.frequency );
-						delete ngramToken;
+
+                        printf("%s\t%d\n", ngramToken->ngram.c_str(), ngramToken->value.frequency );
+
+                        delete ngramToken;
                 }
         }
 }

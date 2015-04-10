@@ -104,7 +104,7 @@ int main( int argc, char * argv[] )
 		tf.showHelp();
 		return 0;
 	}
-	INgrams * ngrams;
+	INgrams * ngrams = NULL;
 	if ( tf.getNgramType() == Config::WORD_NGRAM )
 	{	// word ngrams
 		ngrams = new WordNgrams( tf.getNgramN(), tf.getInFileName().c_str(), tf.getOutFileName().c_str() );
@@ -121,9 +121,9 @@ int main( int argc, char * argv[] )
 	time_t midTime;
 	time( &midTime );
 	fprintf( stderr, "ngrams have been generated, start outputing.\n" );
-	ngrams->output();
 	if ( ngrams )
 	{
+		ngrams->output();
 		delete ngrams;
 		ngrams = NULL;
 	}
@@ -133,8 +133,4 @@ int main( int argc, char * argv[] )
 	fprintf( stderr, "\nSubtotal: %ld seconds for generating ngrams.\n", midTime-startTime );
 	fprintf( stderr, "Subtotal: %ld seconds for outputing ngrams.\n", endTime-midTime );
 	fprintf( stderr, "Total %ld seconds.\n", endTime-startTime );
-
-
-
-
 }

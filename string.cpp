@@ -312,7 +312,7 @@ void string::insert( size_t start, const char *str, size_t len )
 {
 
 
-   if( !str || len<=0 || start < 0 || start > this->strLength  )
+   if( !str || len<=0 || start > this->strLength  )
       return;
 
    if( this->strLength + len +1 >= this->bufferLength )
