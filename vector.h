@@ -308,10 +308,18 @@ public:
    const vector & operator = ( const vector & v );
 
    /**
-    * resize the internal array to newSize.
+    * Resizes the vector to contain newSize elements
+    * @param newSize - size of the resized vector.
+    *                  If n is smaller than the current vector size, the content is reduced to its first newSize elements, removing those beyong(and destroying them)
+    *                  If n is greater than the current vector size, the content is expanded by inserting at the end as many elements as needed to reach the size of newSize. The values are initialised by default object constructor.
+    */
+   void resize( int newSize );
+
+   /**
+    * reserve the space of the internal array to the size of newSize.
     * If newSize less than current array size, vector array will not be changed.
     */
-   void resize( unsigned newSize );
+   void reserve( unsigned newSize );
 
 };
 
@@ -339,7 +347,46 @@ const vector<Object> & vector<Object>::operator=( const vector<Object> & v )
 }
 
 template <class Object>
-void vector<Object>::resize( unsigned newSize )
+void vector<Object>::resize( int newSize )
+{
+    Object *oldArray = objects;
+
+    if ( newSize <= this->currentSize )
+    {
+    	// resize vector will have less elements than current vector has. The extra elements beyond the resized vector will be removed (and objects are NOT destroyed)
+    	// the capacity will remain unchanged
+        this->currentSize = newSize;
+    }
+    else
+    {
+    	// resized vector will have more elements than current vector has
+    	if (newSize > this->capacity())
+    	{
+    		// increase the capacity to new size
+    		this->objects = new Object[ newSize ];
+    		// copy over the original elements, and destroy the old array
+    		for( unsigned k = 0; k < this->currentSize; k++ )
+    		{
+    			this->objects[k] = oldArray[k];
+    		}
+    		if (this->maxSize > 0)
+    		{
+    			delete [ ] oldArray;
+    		}
+    		this->maxSize = newSize;
+    	}
+
+    	for ( unsigned j = this->currentSize; j < newSize; j++ )
+    	{
+    		this->objects[j] = Object();
+    	}
+
+    	this->currentSize = newSize;
+    }
+}
+
+template <class Object>
+void vector<Object>::reserve( unsigned newSize )
 {
    Object *oldArray = objects;
    if ( newSize < currentSize )
