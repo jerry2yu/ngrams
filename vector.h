@@ -78,10 +78,11 @@ public:
 
    /**
     * vector constructor
-    * input: size of vector to be constructed. if not specified, default to 0
+    * @param newMaxSize - size of vector to be constructed. if not specified, default to 0. number of newMaxSize objects will be created.
     */
-   explicit vector( unsigned newMaxSize = 0 ) : currentSize( 0 ), maxSize( newMaxSize )
-   { 
+   explicit vector( unsigned newMaxSize = 0 ) : currentSize( newMaxSize ), maxSize( newMaxSize )
+   {
+      assert(newMaxSize >= 0);
       objects = maxSize > 0 ? new Object[ maxSize ] : 0;
    }
 
